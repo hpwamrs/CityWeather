@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="toolbar_height">40dp</dimen>
+    <dimen name="textView_margin">8dp</dimen>
+    <dimen name="margin_bottom">4dp</dimen>
+    <dimen name="margin">16dp</dimen>
+    <dimen name="image_wide">24dp</dimen>
+    <dimen name="small_textsize">14sp</dimen>
+    <dimen name="large_textSize">18sp</dimen>
+    <dimen name="medium_textSize">16sp</dimen>
+    <dimen name="swipe_marginTop">8dp</dimen>
+    <dimen name="list_paddingBottom">48dp</dimen>
+
+</resources>

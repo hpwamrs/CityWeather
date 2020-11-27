@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">City Weather</string>
+    <string name="cityName">City</string>
+    <string name="temp">Temp</string>
+    <string name="weather">Weather</string>
+    <string name="inputHint">Enter Canada City Name..</string>
+    <string name="add_city">Add City</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="missingTitle">Missing Text</string>
+    <string name="missingMessage">Please enter city name.</string>
+    <string name="OK">OK</string>
+    <string name="add">Add</string>
+    <string name="sort_cities">Sort by city name</string>
+    <string name="temp_ceisius">°C</string>
+    <string name="temp_fahrenheit">°F</string>
+</resources>
