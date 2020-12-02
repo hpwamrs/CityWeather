@@ -12,6 +12,11 @@
     <string name="OK">OK</string>
     <string name="add">Add</string>
     <string name="sort_cities">Sort by city name</string>
-    <string name="temp_ceisius">°C</string>
+    <string name="temp_celsius">°C</string>
     <string name="temp_fahrenheit">°F</string>
+    <string name="no_internet">No Internet connection!</string>
+    <string name="city_added">The city has been added!</string>
+    <string name="city_deleted">The city was Deleted</string>
+    <string name="undo">Undo</string>
+    <string name="no_data">No data available!</string>
 </resources>

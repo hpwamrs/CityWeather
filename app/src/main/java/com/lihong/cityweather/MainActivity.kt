@@ -1,6 +1,5 @@
 package com.lihong.cityweather
 
-
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -26,9 +25,11 @@ import org.jetbrains.anko.uiThread
 import org.json.JSONObject
 import java.util.*
 
-
-const val FIRST_ADD = "First added"
-const val SORT_NAME = "Sort by name"
+private const val FIRST_ADD = "First added"
+private const val SORT_NAME = "Sort by name"
+private const val FIRST_RUN = "firstRun"
+private const val ADD_TYPE = "AddType"
+ const val CITY_NAME = "CityName"
 
 class MainActivity : AppCompatActivity() {
     private var cities: MutableList<CityData> = arrayListOf()
@@ -36,7 +37,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mLoadingIndicator: ProgressBar
     lateinit var sharedPref: SharedPreferences
     private var addedType: String = SORT_NAME
-    var isFahrenheit = false
+    private var isFahrenheit = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,18 +46,18 @@ class MainActivity : AppCompatActivity() {
         sharedPref = this.getPreferences(Context.MODE_PRIVATE)
         setupRecyclerView()
 
-        firstRun = sharedPref.getBoolean("firstRun", true)
+        firstRun = sharedPref.getBoolean(FIRST_RUN, true)
         if (firstRun) {
             addDefaultData()
             val editor = sharedPref.edit()
-            editor.putBoolean("firstRun", false)
+            editor.putBoolean(FIRST_RUN, false)
             editor.apply()
         } else {
             cities.clear()
             rv_cities.adapter?.notifyDataSetChanged()
             refreshData()
         }
-
+        //implement swipe refresh
         swipe_refresh.setOnRefreshListener {
             if (addedType == FIRST_ADD) {
                 addedType = SORT_NAME
@@ -72,10 +73,10 @@ class MainActivity : AppCompatActivity() {
         mLoadingIndicator = progressBar
 
         add_city_fab.setOnClickListener {
-            addSymbolDialog()
+            addCityDialog()
         }
 
-        addedType = sharedPref.getString("AddType", SORT_NAME)!!
+        addedType = sharedPref.getString(ADD_TYPE, SORT_NAME)!!
         if (addedType == FIRST_ADD) {
             addedType = SORT_NAME
         }
@@ -83,18 +84,18 @@ class MainActivity : AppCompatActivity() {
 
     private fun refreshData() {
         if (haveNetworkConnection()) {
-            val tags = sharedPref.all.keys.toMutableList().filter { it != "firstRun" && it != "AddType" }
-
-            for (tag in tags) {
-                getCityWeatherData(tag)
+            val cities = sharedPref.all.keys.toMutableList().filter { it != FIRST_RUN && it != ADD_TYPE }
+            for (city in cities) {
+                getCityWeatherData(city)
             }
         } else {
-            Toast.makeText(this, "No Internet connection!", Toast.LENGTH_SHORT)
+            Toast.makeText(this, getString(R.string.no_internet), Toast.LENGTH_SHORT)
                     .show()
         }
     }
 
-    private fun addSymbolDialog() {
+    // Custom AlertDialog
+    private fun addCityDialog() {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.add_city_dialog, null)
         val dialogTitle = getString(R.string.add_city)
         val builder = AlertDialog.Builder(this@MainActivity, R.style.AppTheme)
@@ -118,22 +119,22 @@ class MainActivity : AppCompatActivity() {
         val city = editCity.text.toString()
         if (city.trim().isNotEmpty() && pattern.matches(city)) {
             val key = city.toUpperCase(Locale.ENGLISH)
-            val tags = sharedPref.all.keys.toMutableList()
-                    .filter { it != "firstRun" && it != "AddType" }
-            if (!tags.contains(key)) {
+            val cities = sharedPref.all.keys.toMutableList()
+                    .filter { it != FIRST_RUN && it != ADD_TYPE }
+            if (!cities.contains(key)) {
                 addedType = FIRST_ADD
                 if (haveNetworkConnection()) {
                     getCityWeatherData(key)
                 } else {
-                    Toast.makeText(this, "No Internet connection!", Toast.LENGTH_SHORT)
+                    Toast.makeText(this,  getString(R.string.no_internet), Toast.LENGTH_SHORT)
                             .show()
                 }
             } else {
-                Toast.makeText(this, "The city has been added!", Toast.LENGTH_SHORT)
+                Toast.makeText(this, getString(R.string.city_added), Toast.LENGTH_SHORT)
                         .show()
             }
-
             editCity.text.clear()
+            //hide soft keyboard
             val imm =
                     this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromWindow(editCity.getWindowToken(), 0)
@@ -156,8 +157,8 @@ class MainActivity : AppCompatActivity() {
                 )
         )
         rv_cities.adapter =
-                cities.let { WeatherAdapter(it, { city: CityData -> cityClicked(city) }) }
-
+                WeatherAdapter(cities) { city: CityData -> cityClicked(city) }
+        //swipe to delete and undo
         val helper = ItemTouchHelper(
                 object : ItemTouchHelper.SimpleCallback(
                         0,
@@ -184,10 +185,10 @@ class MainActivity : AppCompatActivity() {
                         editor.apply()
                         cities.remove(tmp)
                         rv_cities.adapter?.notifyItemRemoved(position)
-                        val layout = rv_cities
 
-                        Snackbar.make(layout, "stock was Deleted", Snackbar.LENGTH_LONG)
-                                .setAction("Undo") { _ ->
+                        val layout = rv_cities
+                        Snackbar.make(layout, getString(R.string.city_deleted), Snackbar.LENGTH_LONG)
+                                .setAction(getString(R.string.undo)) { _ ->
                                     tmp.let { cities.add(position, it) }
                                     rv_cities.adapter?.notifyItemInserted(position)
                                     editor.putString(cityName.toUpperCase(Locale.ENGLISH), cityName)
@@ -202,7 +203,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun cityClicked(cityData: CityData) {
         val intent = Intent(this, WeatherDataActivity::class.java)
-        intent.putExtra("CityName", cityData.cityName)
+        intent.putExtra(CITY_NAME, cityData.cityName)
         startActivity(intent)
     }
 
@@ -216,14 +217,15 @@ class MainActivity : AppCompatActivity() {
                 editor.putString(key, city)
                 editor.apply()
             }
+
         } else {
-            Toast.makeText(this, "No Internet connection!", Toast.LENGTH_SHORT)
+            Toast.makeText(this, getString(R.string.no_internet), Toast.LENGTH_SHORT)
                     .show()
         }
     }
 
     private fun getCityWeatherData(city: String) {
-        progressBar.setVisibility(View.VISIBLE)
+        progressBar.visibility = View.VISIBLE
         var exception: Exception? = null
         var cityWeather = CityData(city)
         val urlString = "$WEATHER_URL$city$WEATHER_KEY"
@@ -241,6 +243,7 @@ class MainActivity : AppCompatActivity() {
                     val temperature: Double
                     val tempString: String
                     if (!isFahrenheit) {
+                        //change temperature default Kelvin unit to Celsius unit
                         temperature = main.getDouble("temp") - 273.15
                         tempString = "${String.format("%.0f", temperature)} °C"
                     } else {
@@ -254,9 +257,9 @@ class MainActivity : AppCompatActivity() {
                 uiThread {
                     if (exception != null) {
                         if (addedType == FIRST_ADD) {
-                            Toast.makeText(it, "No data available!", Toast.LENGTH_SHORT)
+                            Toast.makeText(it, getString(R.string.no_data), Toast.LENGTH_SHORT)
                                     .show()
-                            progressBar.setVisibility(View.INVISIBLE)
+                            progressBar.visibility = View.INVISIBLE
                         }
                     } else {
                         when (addedType) {
@@ -270,28 +273,27 @@ class MainActivity : AppCompatActivity() {
                             SORT_NAME -> {
                                 cities.add(cityWeather)
                                 cities =
-                                        cities.sortedWith(compareBy({ it.cityName }))
+                                        cities.sortedWith(compareBy { it.cityName })
                                                 .toMutableList()
                             }
                         }
-                        rv_cities.adapter =
-                                cities.let { it1 ->
-                                    WeatherAdapter(
-                                            it1,
-                                            { cityData: CityData -> cityClicked(cityData) })
-                                }
+                       rv_cities.adapter =
+                               WeatherAdapter(
+                                       cities
+                               ) { cityData: CityData -> cityClicked(cityData) }
                         rv_cities.adapter?.notifyItemRangeInserted(0, cities.size)
+
                         val editor = sharedPref.edit()
-                        editor.putString("AddType", addedType)
+                        editor.putString(ADD_TYPE, addedType)
                         editor.apply()
                     }
                     progressBar.setVisibility(View.INVISIBLE)
                 }
             }
         } else {
-            Toast.makeText(this, "No Internet connection!", Toast.LENGTH_SHORT)
+            Toast.makeText(this, getString(R.string.no_internet), Toast.LENGTH_SHORT)
                     .show()
-            progressBar.setVisibility(View.INVISIBLE)
+            progressBar.visibility = View.INVISIBLE
         }
     }
 
@@ -325,7 +327,7 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.menu_add -> {
-                addSymbolDialog()
+                addCityDialog()
                 true
             }
             R.id.menu_refresh -> {
@@ -335,18 +337,17 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             R.id.menu_temp -> {
-                if (item.title == getString(R.string.temp_ceisius)) {
+                if (item.title == getString(R.string.temp_celsius)) {
                     cities.clear()
-                    item.setTitle(getString(R.string.temp_fahrenheit))
+                    item.title = getString(R.string.temp_fahrenheit)
                     isFahrenheit = false
                     refreshData()
-                } else
-                    if (item.title == getString(R.string.temp_fahrenheit)) {
-                        cities.clear()
-                        item.setTitle(getString(R.string.temp_ceisius))
-                        isFahrenheit = true
-                        refreshData()
-                    }
+                } else if (item.title == getString(R.string.temp_fahrenheit)) {
+                    cities.clear()
+                    item.title = getString(R.string.temp_celsius)
+                    isFahrenheit = true
+                    refreshData()
+                }
                 true
             }
             else -> super.onOptionsItemSelected(item)

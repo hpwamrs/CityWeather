@@ -18,15 +18,14 @@ import java.net.URL
 class WeatherDataActivity : AppCompatActivity() {
     private lateinit var binding: ActivityWeatherDataBinding
     private var cityName: String = ""
-    var isCeisius = true
+    private var isCelsius = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_weather_data)
         setSupportActionBar(binding.toolbar)
-
-        cityName = intent.getStringExtra("CityName") ?: ""
+        cityName = intent.getStringExtra(CITY_NAME) ?: ""
         getWeatherData(cityName)
     }
 
@@ -49,7 +48,8 @@ class WeatherDataActivity : AppCompatActivity() {
             val icon = item.getString("icon")
             val main = resultJson.getJSONObject("main")
 
-            if (isCeisius) {
+            if (isCelsius) {
+                //change temperature default Kelvin unit to Celsius unit
                 currentTemp = main.getDouble("temp") - 273.15
                 currentTempString = "${String.format("%.0f", currentTemp)} °C"
                 lowTemp = main.getDouble("temp_min") - 273.15
@@ -69,7 +69,7 @@ class WeatherDataActivity : AppCompatActivity() {
             val humidityString = "Humidity: $humidity %"
             val wind = resultJson.getJSONObject("wind")
             val windSpeed = wind.getDouble("speed")
-            val wind_speedString = "Wind: $windSpeed meter/sec"
+            val windSpeedString = "Wind: $windSpeed meter/sec"
 
             uiThread {
                 binding.name.text = name
@@ -78,14 +78,14 @@ class WeatherDataActivity : AppCompatActivity() {
                 binding.lowTemp.text = lowTempString
                 binding.highTemp.text = highTempString
                 binding.humidity.text = humidityString
-                binding.wind.text = wind_speedString
+                binding.wind.text = windSpeedString
                 getIcon(icon)
             }
         }
     }
 
     private fun getIcon(icon: String) {
-        val urlString = "http://openweathermap.org/img/wn/$icon@2x.png"
+        val urlString = "$BASE_ICON_URL$icon@2x.png"
         val chartURL = URL(urlString)
         var image: Bitmap? = null
         doAsync {
@@ -97,7 +97,7 @@ class WeatherDataActivity : AppCompatActivity() {
             }
             uiThread {
                 if (exception != null) {
-                    Toast.makeText(it, "No Data available!", Toast.LENGTH_SHORT)
+                    Toast.makeText(it,  getString(R.string.no_data), Toast.LENGTH_SHORT)
                             .show()
                 } else {
                     binding.iconImage.setImageBitmap(image)
@@ -113,16 +113,15 @@ class WeatherDataActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        isCeisius = intent.getBooleanExtra("Ceisius", true)
         return when (item.itemId) {
             R.id.menu_temp -> {
-                if (item.title == getString(R.string.temp_ceisius)) {
-                    isCeisius = true
-                    item.setTitle(getString(R.string.temp_fahrenheit))
+                if (item.title == getString(R.string.temp_celsius)) {
+                    isCelsius = true
+                    item.title = getString(R.string.temp_fahrenheit)
                 } else
                     if (item.title == getString(R.string.temp_fahrenheit)) {
-                     isCeisius = false
-                     item.setTitle(getString(R.string.temp_ceisius))
+                        isCelsius = false
+                        item.title = getString(R.string.temp_celsius)
                     }
                 getWeatherData(cityName)
                 true

@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/light_blue"
+    android:id="@+id/main"
     tools:context=".MainActivity">
 
     <androidx.appcompat.widget.Toolbar
@@ -13,13 +14,13 @@
         android:layout_height="@dimen/toolbar_height"
         android:background="@color/colorPrimary"
         android:theme="?attr/actionBarTheme"
-        app:popupTheme="@style/AppTheme.PopupOverlay"
-        app:titleTextAppearance="@style/Toolbar.TitleText"
         app:contentInsetStart="0dp"
         app:layout_constraintBottom_toTopOf="@+id/city_name"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:popupTheme="@style/AppTheme.PopupOverlay"
+        app:titleTextAppearance="@style/Toolbar.TitleText" />
 
 
     <TextView
@@ -43,8 +44,8 @@
         android:layout_height="wrap_content"
         android:gravity="start"
         android:text="@string/temp"
-        android:textStyle="bold"
         android:textSize="@dimen/large_textSize"
+        android:textStyle="bold"
         app:layout_constraintBaseline_toBaselineOf="@+id/city_name"
         app:layout_constraintEnd_toStartOf="@+id/city_weather"
         app:layout_constraintHorizontal_bias="0.5"
@@ -71,9 +72,9 @@
 
     <View
         android:id="@+id/divider"
-        android:layout_marginTop="@dimen/textView_margin"
         android:layout_width="match_parent"
         android:layout_height="1dp"
+        android:layout_marginTop="@dimen/textView_margin"
         android:background="@color/light_grey"
         app:layout_constraintBottom_toTopOf="@+id/swipe_refresh"
         app:layout_constraintEnd_toEndOf="parent"
@@ -115,6 +116,7 @@
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/add_city_fab"
+        style="@style/fab_style"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:clickable="true"
@@ -122,5 +124,5 @@
         app:layout_anchorGravity="bottom|right|end"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        style="@style/fab_style" />
+        tools:ignore="ContentDescription" />
 </androidx.constraintlayout.widget.ConstraintLayout>

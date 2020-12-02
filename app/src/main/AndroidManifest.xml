@@ -14,7 +14,10 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name="com.lihong.cityweather.WeatherDataActivity"></activity>
+        <activity
+            android:name="com.lihong.cityweather.WeatherDataActivity"
+            android:screenOrientation="nosensor">
+        </activity>
         <activity
             android:name="com.lihong.cityweather.MainActivity"
             android:screenOrientation="nosensor"

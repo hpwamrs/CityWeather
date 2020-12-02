@@ -7,8 +7,8 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.city_item.view.*
 
 class WeatherAdapter(
-        val cities: MutableList<CityData>,
-        val clickListener: (CityData) -> Unit) : RecyclerView.Adapter<WeatherAdapter.WeatherHolder>() {
+        private val cities: MutableList<CityData>,
+        private val clickListener: (CityData) -> Unit) : RecyclerView.Adapter<WeatherAdapter.WeatherHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WeatherHolder {
         val inflater = LayoutInflater.from(parent.context)
